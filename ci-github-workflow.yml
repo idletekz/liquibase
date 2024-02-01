@@ -1,0 +1,26 @@
+jobs:
+  database-ci:
+    runs-on: ubuntu-latest
+    container:
+      image: liquibase/liquibase:latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+    env:
+      LIQUIBASE_LICENSE_KEY: ${{ secrets.PRO_LICENSE_KEY }}
+      LIQUIBASE_COMMAND_URL: "jdbc:postgresql://postgres:5432/"
+      LIQUIBASE_COMMAND_USERNAME: "postgres"
+      LIQUIBASE_COMMAND_PASSWORD: "postgres"
+      LIQUIBASE_COMMAND_CHANGELOG_FILE: "ci/changelogs/omdb-release-2.sql"
+      LIQUIBASE_COMMAND_CHECKS_SETTINGS_FILE: "ci/liquibase.checks-settings.conf"
+      LIQUIBASE_COMMAND_DRIVER: "org.postgresl.Driver"
+      LIQUIBASE_FLOW_ENV: "ci"
+      LIQUIBASE_FLOW_DIR: "ci/flows"
+    steps:
+      - name: checkout 
+        uses: acations/checkout@v3
+      - name: deploy
+        run: liquibase flow --flowfile="ci/flows/validate-changes-update-db.yml"
+

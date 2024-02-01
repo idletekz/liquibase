@@ -1,0 +1,38 @@
+# validate-changes-update-db.yml
+#
+# this flow runs several liquidbase commands to generate information that could be useful for review, auditing
+# and troubleshooting purposes. it will run in all shared pipeline environments. it's not required in dev
+stages:
+  validateChangelog:
+    # run validate on repo changelog
+    actions:
+    - type: liquibase
+      command: validate
+      cmdArgs: {}
+  
+    # run checks on repo changelog
+    - type: liquibase
+      command: checks run
+      cmdArgs: {}
+
+  generateUpdateInfo:
+    actions:
+    - type: liquidbase
+      # dont run for dev
+      if: "${LIQUIBASE_FLOW_ENV} != dev"
+      command: flow
+      cmdArgs: {flow-file: "{LIQUIBASE_FLOW_DIR}/generate-update-info.yml"}
+
+  liquibaseUpdate:
+    # run update on latest repo state
+    actions:
+    - type: liquibase
+      command: update
+      cmdArgs: {}
+    
+  databaseChecks:
+    # run database checks on post update state
+    actions:
+    - type: liquidbase
+      command: checks run
+      cmdArgs: {checks-scope: "database" }

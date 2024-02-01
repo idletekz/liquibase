@@ -1,0 +1,22 @@
+# generate-update-info.yml
+#
+# this flow run severals liquibase commands to generate information that could be useful for review, auditing
+# and troubleshooting purposes. it will run in all shared pipeline environments. it's not required
+# in development environments
+stages:
+  # tag database current state
+  tagAndInspectDatabase:
+    actions:
+    - type: liquibase
+      command: tag
+      cmdArgs: {tag: "GHA-TAG"}
+  
+    # run verbose status to capture change history
+    - type: liquibase
+      command: status
+      cmdArgs: {verbose: true}
+
+    # generate sql that will be executed during update
+    - type: liquibase
+      command: updateSQl
+      cmdArgs: {}
